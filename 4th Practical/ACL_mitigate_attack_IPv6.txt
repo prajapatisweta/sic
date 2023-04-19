@@ -1,0 +1,108 @@
+Configure IP ACLs to Mitigate Attacks and IPV6 ACLs
+a.	Verify connectivity among devices before firewall configuration.
+b.	Use ACLs to ensure remote access to the routers is available only from management station PC-C.
+c.	Configure ACLs on to mitigate attacks.
+d.	Configuring IPv6 ACLs
+
+// setup the topology, configure all the routers and perform RIP routing
+// verify using ping command
+
+// type the following command in all the 3 routers just change the hostname
+    enable
+    conf t
+    ip domain-name sweet.com
+    hostname r0
+    crypto key generate rsa
+    512
+    line vty 0 4
+    transport input ssh
+    login local
+    exit
+    username admin
+    username admin privilege 15 password <password>
+    exit
+    exit
+
+// Then, type these commands in all three routers:
+    enable
+    conf t
+    access-list 10 permit host 192.168.4.2
+    line vty 0 4 
+    access-class 10 in
+
+// Ssh enable commands for pc terminal
+    Ssh -l admin <router-ip>
+    Ssh -l admin 192.168.3.2
+
+IPv6 routing
+
+// Router 0 commands:
+    Router>enable
+    Router#conf t
+    Router(config)#ipv6 unicast-routing
+    Router(config)#interface gigabitEthernet0/0
+    Router(config-if)#ipv6 address 2001::1/64
+    Router(config-if)#ipv6 rip a enable
+    Router(config-if)#no shutdown
+    Router(config-if)#exit
+    Router(config)#ipv6 unicast-routing
+    Router(config)#interface gigabitEthernet0/1
+    Router(config-if)#ipv6 address 2002::1/64
+    Router(config-if)#ipv6 rip a enable
+    Router(config-if)#no shutdown
+    Router(config-if)#exit
+    Router(config)#ipv6 unicast-routing
+    Router(config)#interface Serial0/1/0
+    Router(config-if)#ipv6 address 2003::1/64
+    Router(config-if)#ipv6 rip a enable
+    Router(config-if)#no shutdown
+
+// ROUTER 1 commands:
+    Router>
+    Router>enable
+    Router#conf t
+    Router(config)#ipv6 unicast-routing
+    Router(config)#interface Serial0/1/0
+    Router(config-if)#ipv6 address 2003::2/64
+    Router(config-if)#ipv6 rip a enable
+    Router(config-if)#no shutdown
+    Router(config-if)#
+    Router(config-if)#exit
+    Router(config)#ipv6 unicast-routing
+    Router(config)#interface Serial0/1/1
+    Router(config-if)#ipv6 address 2004::1/64
+    Router(config-if)#ipv6 rip a enable
+    Router(config-if)#no shutdown
+    Router(config-if)#
+
+ROUTER 2 commands
+    Router>enable
+    Router#conf t
+    Enter configuration commands, one per line. End with CNTL/Z.
+    Router(config)#ipv6 unicast-routing
+    Router(config)#interface Serial0/1/0
+    Router(config-if)#ipv6 address 2004::2/64
+    Router(config-if)#ipv6 rip a enable
+    Router(config-if)#no shutdown
+    Router(config-if)#exit
+    Router(config)#ipv6 unicast-routing
+    Router(config)#interface gigabitEthernet0/0
+    Router(config-if)#ipv6 address 2005::1/64
+    Router(config-if)#ipv6 rip a enable
+    Router(config-if)#no shutdown
+    Router(config-if)#
+
+// Verifying server connection using ping command on PC
+Ping 2005::2 (use ip of server)
+
+// Configuring ACL
+    enable
+    conf t
+    ipv6 access-list sweet
+    deny tcp any host 2005::2 eq www
+    deny tcp any host 2005::2 eq 443
+    permit ipv6 any any
+    exit
+    interface serial0/1/1
+    ipv6 traffic-filter sweet in
+    exit

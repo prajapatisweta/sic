@@ -1,0 +1,69 @@
+Configure IOS Intrusion Prevention System (IPS) Using the CLI
+a.	Enable IOS IPS.
+b.	Modify an IPS signature.
+
+// After creating toplogy configure RIP Routing on All routers
+Now, verifying the routing using ping command from pc
+
+PART 1: Enable IOS IPS (Router 1)
+Type following commands
+    Router>enable
+    Router#conf t
+    Router(config)#license boot module c1900 technology-package securityk9
+    Router#reload
+
+    Router#clock set 11:47:56 MARCH 3 2020
+    Router#mkdir sweet
+    Create directory filename [sweet]?
+    Created dir flash:sweet
+    Router#conf t
+    Enter configuration commands, one per line. End with CNTL/Z.
+    Router(config)#ip ips config location flash:sweet
+    Router(config)#ip ips name iosips
+    Router(config)#ip ips notify log
+    Router(config)#ip ips signature-category
+    Router(config-ips-category)#category all
+    Router(config-ips-category-action)#retired false
+    Router(config-ips-category-action)#exit
+
+    Router(config-ips-category)#category ios_ips basic
+    Router(config-ips-category-action)#retired false
+    Router(config-ips-category-action)#exit
+    Router(config-ips-category)#exit
+    Do you want to accept these changes? [confirm]
+    Applying Category configuration to signatures ...
+    %IPS-6-ENGINE_BUILDING: atomic-ip - 288 signatures - 6 of 13 engines
+    %IPS-6-ENGINE_READY: atomic-ip - build time 30 ms - packets for this engine will be scanned
+    Router(config)#interface Serial0/1/0
+    Router(config-if)#ip ips iosips out
+    Router(config-if)#exit
+
+PART 2: Modify the Signature
+Type following commands in Router 1 again,
+    Router#conf t
+    Enter configuration commands, one per line. End with CNTL/Z.	
+    Router(config)#ip ips signature-definition
+    Router(config-sigdef)#signature 2004 0
+    Router(config-sigdef-sig)#status
+    Router(config-sigdef-sig-status)#retired false
+    Router(config-sigdef-sig-status)#enabled true
+    Router(config-sigdef-sig-status)#exit
+    Router(config-sigdef-sig)#engine
+    Router(config-sigdef-sig-engine)#event-action produce-alert
+    Router(config-sigdef-sig-engine)#event-action deny-packet-inline
+    Router(config-sigdef-sig-engine)#exit
+    Router(config-sigdef-sig)#exit
+    Router(config-sigdef)#exit
+    Do you want to accept these changes? [confirm]
+    %IPS-6-ENGINE_BUILDS_STARTED:
+    %IPS-6-ENGINE_BUILDING: atomic-ip - 303 signatures - 3 of 13 engines
+    %IPS-6-ENGINE_READY: atomic-ip - build time 480 ms - packets for this engine will be scanned
+    %IPS-6-ALL_ENGINE_BUILDS_COMPLETE: elapsed time 648 ms
+    Router(config)#
+
+Verifying IPS configuration:
+First pinging Server(192.168) from PC1(192.168.4.2)
+(The ping will fail)
+
+Pinging PC1(192.168.4.2) from Server(192.168.1.2)
+then check syslog service in server

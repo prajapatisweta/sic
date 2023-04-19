@@ -1,0 +1,61 @@
+Configuring a Zone-Based Policy Firewall
+
+part 1
+// Create the toplogy and add connections 
+// perform static routing
+        ex. pc's network via nearby router connection
+
+verify routes using ping command from pc to server
+
+part 2
+// Configuring ssh on router 0 (center one)
+Commands for router 0:
+    enable
+    conf t
+    ip domain-name sweet.com
+    hostname R2
+    crypto key generate rsa
+    line vty 0 4
+    transport input ssh
+    login local
+    exit
+    username admin privilege 15 password admin
+
+// verifying ssh using pc 
+ssh -l admin <ip of router on which ssh was executed (192.168.3.1)>
+
+PART  3: Create firewall zones on Router2 (Right one)
+    enable
+    conf t
+    zone security in-zone
+    exit
+    zone security out-zone
+    exit
+    access-list 101 permit ip 192.168.4.0 0.0.0.255 any
+    class-map type inspect match-all in-map
+    match access-group 101
+    exit
+    policy-map type inspect in-out
+    class type inspect in-map
+    exit
+    exit
+    zone-pair security in-out-zone source in-zone destination out-zone
+    service-policy type inspect in-out
+    exit
+    interface gigabitEthernet0/0
+    zone-member security in-zone
+    exit
+    interface Serial0/1/0
+    zone-member security in-zone
+    exit
+    exit
+
+PART 4: Testing firewall functionality (From in-zone to out-zone)
+Step 1: Pinging SERVER from PC (Success)
+Step 2: Start an SSH session from PC to router 1
+Step 3: Type following command in Router 2
+#show policy-map type inspect zone-pair sessions
+
+PART 5: Testing the firewall functionality (From out-zone to in-zone)
+Pinging pc from server (Failure)
+Hence the firewall functionality is verified.

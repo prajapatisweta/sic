@@ -1,0 +1,28 @@
+Configure AAA Authentication
+a. Configure a local user account on Router and configure authenticate on the console and vty lines using local AAA
+b. Verify local AAA authentication from the Router console and the PC-A client
+
+SOLUTION:
+
+Place 2 servers:
+Server1 -> Services -> AAA -> Server type: "Radius" -> Complete the User setup(Add one user)
+Server2 -> Services -> AAA -> Server type: "Tacacs" -> Complete the User setup(Add one user)
+
+Router Configuration
+Router>enable
+Router#conf t
+Enter configuration commands, one per line. End with CNTL/Z.
+Router(config)#aaa new-model
+Router(config)#tacacs-server host 192.168.2.2 key panda 
+Router(config)#radius-server host 192.168.2.3 key panda
+Router(config)#aaa authentication login moon group tacacs+ group radius local
+Router(config)#line vty 0 4
+Router(config-line)#login authentication moon
+Router(config-line)#exit
+Router(config)#exit
+
+Then verify it using pc:
+telnet 192.168.2.1
+
+To verify RADIUS, go to tacacs server and turn off the AAA service and turn on AAA service from
+RADIUS server
