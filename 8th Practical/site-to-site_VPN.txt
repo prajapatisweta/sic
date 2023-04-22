@@ -1,0 +1,103 @@
+Configure and Verify a Site-to-Site IPsec VPN Using CLI
+
+SOLUTION:
+
+PART 1:
+    // After creating topology, Configure RIP routing on all the routers.
+    // After configuring RIP Routing, Verify it using Ping commands
+
+PART 2: Configure IPSec parameters on router
+    Step 1: Enable the security package on router0 through the following commands in CLI mode
+        Router>enable
+        Router#conf t
+        Enter configuration commands, one per line. End with CNTL/Z.
+        Router(config)#license boot module c1900 technology-package securityk9
+        Router(config)#do write
+        Router(config)#exit
+        Router#reload // ----> (Save config once before you reload.)
+
+        Now check if the security package is enabled:
+            Router>enable
+            Router#show version
+        
+    Step 2: Configuring IKA phase 1 ISAKMP policy on router0 (Left side router --In Journal)
+    Type the following command in CLI mode of router 0
+        Router#conf t
+        Router(config)#access-list 110 permit ip 192.168.1.0 0.0.0.255 192.168.4.0 0.0.0.255
+        Router(config)#crypto isakmp policy 10
+        Router(config-isakmp)#encryption aes 256
+        Router(config-isakmp)#authentication pre-share
+        Router(config-isakmp)#group 5
+        Router(config-isakmp)#exit
+        Router(config)#crypto isakmp key sweet address 192.168.3.2
+        Router(config)#crypto ipsec transform-set vpn-set esp-aes esp-sha-hmac
+        Router(config)#crypto map vpn-map 10 ipsec-isakmp
+        Router(config-crypto-map)#set peer 192.168.3.2
+        Router(config-crypto-map)#set transform-set vpn-set
+        Router(config-crypto-map)#match address 110
+        Router(config-crypto-map)#exit
+        Router(config)#
+        Router(config)#interface serial0/1/0
+        Router(config-if)#crypto map vpn-map
+        Router(config-if)#exit
+
+Part 3: Configure IPSec parameters on router1 (Repeating above steps for Router 1(The right side router. --In journal))
+    Step 1: Enable the security package on router1 through the following command.
+    Router>enable
+    Router#conf t
+    Router(config)#license boot module c1900 technology-package securityk9
+    Router(config)#do write
+    Router(config)#exit
+    Router#reload
+
+    Now we need to check if the security package is enabled
+        Router>enable
+        Router#show version
+    
+    Step 2: Configuring IKA phase 1 ISAKMP policy on router1
+        Router#conf t
+        Router(config)#access-list 110 permit ip 192.168.4.0 0.0.0.255 192.168.1.0 0.0.0.255
+        Router(config)#crypto isakmp policy 10
+        Router(config-isakmp)#encryption aes 256
+        Router(config-isakmp)#authentication pre-share
+        Router(config-isakmp)#group 5
+        Router(config-isakmp)#exit
+        Router(config)#crypto isakmp key sweet address 192.168.2.1
+        Router(config)#crypto ipsec transform-set vpn-set esp-aes esp-sha-hmac
+        Router(config)#crypto map vpn-set 10 ipsec-isakmp
+        Router(config-crypto-map)#description vpn
+        Router(config-crypto-map)#set peer 192.168.2.1
+        Router(config-crypto-map)#set transform-set vpn-set
+        Router(config-crypto-map)#match address 110
+        Router(config-crypto-map)#exit
+        Router(config)#
+        Router(config)#interface serial0/1/0
+        Router(config-if)#crypto map vpn-set
+        Router(config-if)#
+
+Part 4: Verify the IPSec VPN
+    Step 1: Type the following command in the CLI mode of router 0
+        Router>enable
+        Router#show crypto ipsec sa
+        // ----> These lines should be present (OUTPUT)
+            #pkts encaps: 0, #pkts encrypt: 0, #pkts digest: 0
+            #pkts decaps: 0, #pkts decrypt: 0, #pkts verify: 0
+    Step 2: 
+        Ping PC1 from PC0
+        And now we check the router 0 by typing the following command
+            Router#show crypto ipsec sa
+            // -----> OUTPUT
+                #pkts encaps: 7, #pkts encrypt: 7, #pkts digest: 0      // These number should increase.
+                #pkts decaps: 6, #pkts decrypt: 6, #pkts verify: 0
+        Ping again PC1 from PC0
+        Now check again the following command on router 0
+            Router#show crypto ipsec sa
+            // -----> OUTPUT
+                #pkts encaps: 11, #pkts encrypt: 11, #pkts digest: 0    // These number should increase.
+                #pkts decaps: 10, #pkts decrypt: 10, #pkts verify: 0
+        
+        Ping PC2 from PC0
+        Now check the following command on Router 0
+            Router#show crypto ipsec sa
+
+            

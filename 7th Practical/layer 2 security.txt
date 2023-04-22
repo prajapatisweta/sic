@@ -1,0 +1,51 @@
+Layer 2 Security
+a.  Assign the Central switch as the root bridge.
+b.  Secure spanning-tree parameters to prevent STP manipulation attacks.
+c.  Enable port security to prevent CAM table overflow attacks
+
+SOLUTION:
+Create the topology as shown (No routing, pc, server configuration. Just use proper ports)
+
+PART 1: Assign the Central switch as the root bridge.
+    (MultilayerSwitch Command)
+    show spanning-tree
+    // Find the root and on which port it is connected.
+    // Find the root using "show spanning-tree".
+    // After finding the root, execute this command on that switch: 
+    erase startup-config
+    // Now go back to the multilayer switch and execute following commands:
+    conf t
+    spanning-tree vlan 1 root primary
+    do show spann // -> This command is used to(verify) see if MultilayerSwitch has became primary or not.
+
+PART 2: Protect Against STP Attack
+    -- (SwitchA and SwitchB commands)
+    enable
+    conf t
+    interface range fastEthernet0/1-2
+    switchport mode access
+    spanning-tree portfast
+    -- (Switch1 and Switch 2 commands)
+    enable
+    conf t
+    interface range fastEthernet0/23-24 (Use ports properly!!)
+    spanning-tree guard root
+    -- (SwitchA and SwitchB command)
+    spanning-tree bpdguard enable
+
+PART 3: Enable port security
+    -- (SwitchA and SwitchB commands)
+    switchport port-security
+    switchport port-security maximum 2
+    switchport port-security mac-address sticky
+    switchport port-security violation shutdown
+
+Verifying:
+    -- (SwitchA and SwitchB commands)
+    show port-security int f0/1
+
+Shutting down the remaining ports (NOT SOOO IMP):
+    -- (SwitchA and SwitchB commands)
+    conf t
+    interface range f0/3-22
+    shutdown
