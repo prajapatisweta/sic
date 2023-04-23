@@ -12,7 +12,15 @@ Router(config)#access-list 100 permit tcp host 192.168.3.2
 Router(config)#access-list 100 permit tcp host 192.168.3.2 host 192.168.1.2 eq
 ftp
 Router(config)#access-list 100 permit tcp host 192.168.3.2 host 192.168.1.2 eq
-ftp
+www
 Router(config)#interface gigabitEthernet0/1
 Router(config-if)#ip access-group 100 in
 Router(config-if)#ip access-group 100 out
+
+// if acl stops working use below set of commands
+
+    router#show access-list 100
+    router#conf t
+    router(config)#no access-list 100
+    router(config)#exit
+    router#show access-list 100

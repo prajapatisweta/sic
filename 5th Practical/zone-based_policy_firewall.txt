@@ -13,7 +13,7 @@ Commands for router 0:
     enable
     conf t
     ip domain-name sweet.com
-    hostname R2
+    hostname R0
     crypto key generate rsa
     line vty 0 4
     transport input ssh
@@ -31,12 +31,15 @@ PART  3: Create firewall zones on Router2 (Right one)
     exit
     zone security out-zone
     exit
+    zone security in-zone
+    exit
     access-list 101 permit ip 192.168.4.0 0.0.0.255 any
     class-map type inspect match-all in-map
     match access-group 101
     exit
-    policy-map type inspect in-out
+    policy-map type inspect in-out     // if not working try outbound instead of in-out
     class type inspect in-map
+    inspect
     exit
     exit
     zone-pair security in-out-zone source in-zone destination out-zone
@@ -53,6 +56,8 @@ PART  3: Create firewall zones on Router2 (Right one)
 PART 4: Testing firewall functionality (From in-zone to out-zone)
 Step 1: Pinging SERVER from PC (Success)
 Step 2: Start an SSH session from PC to router 1
+        ssh -l admin <ip of center router on which ssh was performed> 11.1.1.1
+        //without closing the ssh go to step 3
 Step 3: Type following command in Router 2
 #show policy-map type inspect zone-pair sessions
 
