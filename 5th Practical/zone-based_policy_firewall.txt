@@ -42,7 +42,7 @@ PART  3: Create firewall zones on Router2 (Right one, left one according to exam
     exit
     zone security in-zone
     exit
-    access-list 101 permit ip 192.168.4.0 0.0.0.255 any
+    access-list 101 permit ip <network of pc>192.168.1.0 0.0.0.255 any
     class-map type inspect match-all in-map
     match access-group 101
     exit
