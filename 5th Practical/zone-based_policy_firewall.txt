@@ -24,7 +24,16 @@ Commands for router 0:
 // verifying ssh using pc 
 ssh -l admin <ip of router on which ssh was executed (192.168.3.1)>
 
-PART  3: Create firewall zones on Router2 (Right one)
+PART  3: Create firewall zones on Router2 (Right one, left one according to exam slip)
+
+///enable security package first
+    Router>enable
+    Router#conf t
+    Router(config)#license boot module c1900 technology-package securityk9
+    Router(config)#do write
+    Router(config)#exit
+    Router#reload
+
     enable
     conf t
     zone security in-zone
